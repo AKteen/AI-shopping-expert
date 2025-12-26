@@ -21,8 +21,12 @@ from schemas import (
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     print("Starting up... Creating database tables")
-    await init_db()
-    print("Database tables created successfully")
+    try:
+        await init_db()
+        print("Database tables created successfully")
+    except Exception as e:
+        print(f"Database initialization failed: {e}")
+        print("App will continue without database - some features may not work")
     yield
     print("Shutting down...")
 
@@ -48,19 +52,35 @@ EMBEDDING_MODEL = os.getenv("EMBEDDING_MODEL", "sentence-transformers/all-MiniLM
 GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 CHAT_MODEL = os.getenv("CHAT_MODEL", "llama3-8b-8192")
 
-# Simple fallback embeddings using text hashing
+# Simple fallback embeddings using HuggingFace Inference API
 import hashlib
 import json
-
 async def get_embedding(text: str) -> List[float]:
-    # Create deterministic embedding from text
+    try:
+        # Use HuggingFace Inference API to save memory
+        async with httpx.AsyncClient() as client:
+            response = await client.post(
+                f"https://api-inference.huggingface.co/pipeline/feature-extraction/{EMBEDDING_MODEL}",
+                headers={"Authorization": f"Bearer {HF_API_TOKEN}"},
+                json={"inputs": text},
+                timeout=30.0
+            )
+            if response.status_code == 200:
+                embedding = response.json()
+                # Handle different response formats
+                if isinstance(embedding, list) and len(embedding) > 0:
+                    if isinstance(embedding[0], list):
+                        return embedding[0][:384]  # Take first 384 dimensions
+                    return embedding[:384]
+    except Exception as e:
+        print(f"HuggingFace API failed: {e}")
+    
+    # Fallback to hash-based embedding if API fails
     text_hash = hashlib.sha256(text.lower().encode()).hexdigest()
-    # Convert to 384-dimensional vector (matching sentence transformers)
     embedding = []
-    for i in range(0, min(len(text_hash), 96), 2):  # 96 hex chars = 48 bytes = 384 bits
+    for i in range(0, min(len(text_hash), 96), 2):
         embedding.append(int(text_hash[i:i+2], 16) / 255.0)
     
-    # Pad to 384 dimensions
     while len(embedding) < 384:
         embedding.extend(embedding[:min(len(embedding), 384-len(embedding))])
     
@@ -387,4 +407,5 @@ async def root():
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    port = int(os.environ.get("PORT", 8000))
+    uvicorn.run(app, host="0.0.0.0", port=port)

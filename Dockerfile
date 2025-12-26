@@ -1,9 +1,9 @@
 # Multi-stage build for production
-FROM node:18-alpine AS frontend-build
+FROM node:20-alpine AS frontend-build
 
 WORKDIR /app/frontend
 COPY neu-app/package*.json ./
-RUN npm ci --only=production
+RUN npm install
 COPY neu-app/ ./
 RUN npm run build
 

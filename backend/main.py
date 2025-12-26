@@ -33,9 +33,10 @@ async def lifespan(app: FastAPI):
 app = FastAPI(title="AI Shopping Expert", version="1.0.0", lifespan=lifespan)
 
 # Mount static files for production
-static_dir = Path("static")
-if static_dir.exists():
-    app.mount("/static", StaticFiles(directory="static"), name="static")
+static_path = os.path.join(os.getcwd(), "static")
+if os.path.exists(static_path):
+    # Mount the entire static directory to serve all assets
+    app.mount("/static", StaticFiles(directory=static_path, html=True), name="static")
 
 # CORS middleware
 app.add_middleware(
@@ -400,10 +401,25 @@ async def health_check():
 @app.get("/")
 async def root():
     # Serve React app in production
-    static_dir = Path("static")
-    if static_dir.exists():
-        return FileResponse("static/index.html")
+    static_path = os.path.join(os.getcwd(), "static")
+    index_path = os.path.join(static_path, "index.html")
+    if os.path.exists(index_path):
+        return FileResponse(index_path)
     return {"message": "AI Shopping Expert API", "docs": "/docs"}
+
+# Catch-all route for React Router (must be last)
+@app.get("/{full_path:path}")
+async def catch_all(full_path: str):
+    # Don't interfere with API routes or static files
+    if full_path.startswith(("admin/", "chat", "health", "docs", "openapi.json", "static/")):
+        raise HTTPException(status_code=404, detail="Not found")
+    
+    # Serve React app for all other routes
+    static_path = os.path.join(os.getcwd(), "static")
+    index_path = os.path.join(static_path, "index.html")
+    if os.path.exists(index_path):
+        return FileResponse(index_path)
+    raise HTTPException(status_code=404, detail="Not found")
 
 if __name__ == "__main__":
     import uvicorn

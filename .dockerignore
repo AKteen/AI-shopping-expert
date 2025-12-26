@@ -1,0 +1,14 @@
+node_modules
+npm-debug.log
+.git
+.gitignore
+README.md
+.env
+.nyc_output
+coverage
+.DS_Store
+*.log
+backend/__pycache__
+backend/.env
+neu-app/node_modules
+neu-app/dist

@@ -1,0 +1,19 @@
+{
+  "name": "ai-shopping-expert",
+  "version": "1.0.0",
+  "description": "AI-powered shopping assistant with RAG",
+  "scripts": {
+    "dev:frontend": "cd neu-app && npm run dev",
+    "dev:backend": "cd backend && python main.py",
+    "build": "cd neu-app && npm run build",
+    "start": "cd backend && python main.py",
+    "install:all": "cd neu-app && npm install && cd ../backend && pip install -r requirements.txt"
+  },
+  "repository": {
+    "type": "git",
+    "url": "your-repo-url"
+  },
+  "keywords": ["ai", "rag", "shopping", "fastapi", "react"],
+  "author": "Your Name",
+  "license": "MIT"
+}

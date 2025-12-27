@@ -35,8 +35,10 @@ app = FastAPI(title="AI Shopping Expert", version="1.0.0", lifespan=lifespan)
 # Mount static files for production
 static_path = os.path.join(os.getcwd(), "static")
 if os.path.exists(static_path):
-    # Mount the entire static directory to serve all assets
-    app.mount("/static", StaticFiles(directory=static_path, html=True), name="static")
+    # Mount assets directory for CSS/JS files
+    assets_path = os.path.join(static_path, "assets")
+    if os.path.exists(assets_path):
+        app.mount("/assets", StaticFiles(directory=assets_path), name="assets")
 
 # CORS middleware
 app.add_middleware(
@@ -410,8 +412,8 @@ async def root():
 # Catch-all route for React Router (must be last)
 @app.get("/{full_path:path}")
 async def catch_all(full_path: str):
-    # Don't interfere with API routes or static files
-    if full_path.startswith(("admin/", "chat", "health", "docs", "openapi.json", "static/")):
+    # Don't interfere with API routes
+    if full_path.startswith(("admin/", "chat", "health", "docs", "openapi.json", "assets/")):
         raise HTTPException(status_code=404, detail="Not found")
     
     # Serve React app for all other routes

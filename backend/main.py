@@ -10,6 +10,7 @@ import os
 from typing import List
 from contextlib import asynccontextmanager
 from pathlib import Path
+from datetime import datetime
 
 from database import get_db, init_db
 from models import Product, ProductEmbedding
@@ -391,14 +392,21 @@ async def chat_endpoint(request: ChatRequest, db: AsyncSession = Depends(get_db)
         )
         
     except Exception as e:
+        print(f"Chat endpoint error: {str(e)}")
+        import traceback
+        traceback.print_exc()
         return ChatResponse(
-            response="I'm sorry, I encountered an error. Please try again.",
+            response=f"Error: {str(e)}",
             products=[]
         )
 
 @app.get("/health")
 async def health_check():
     return {"status": "healthy", "message": "Server running without database"}
+
+@app.get("/test")
+async def test_endpoint():
+    return {"message": "API is working", "timestamp": str(datetime.now())}
 
 @app.get("/")
 async def root():

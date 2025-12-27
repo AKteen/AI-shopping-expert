@@ -39,11 +39,12 @@ export const useChat = () => {
 
       setMessages(prev => [...prev, aiMessage]);
     } catch (err) {
+      console.error('Chat API Error:', err);
       setError(err.message);
       const errorMessage = {
         id: Date.now() + 1,
         type: 'error',
-        content: 'Sorry, I encountered an error. Please try again.'
+        content: `Error: ${err.message}`
       };
       setMessages(prev => [...prev, errorMessage]);
     } finally {

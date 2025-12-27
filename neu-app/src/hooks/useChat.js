@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react';
 
-const API_BASE_URL = '';
+const API_BASE_URL = window.location.origin;
 
 export const useChat = () => {
   const [messages, setMessages] = useState([]);

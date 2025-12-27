@@ -17,7 +17,11 @@ engine = create_async_engine(
     DATABASE_URL, 
     echo=False,
     pool_pre_ping=True,
-    connect_args={"ssl": "require"}
+    connect_args={
+        "server_settings": {
+            "application_name": "ai_shopping_app",
+        }
+    }
 )
 
 # Create async session factory

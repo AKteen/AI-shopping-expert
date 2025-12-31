@@ -4,6 +4,11 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Mobile-first responsive utilities */
+.pb-safe {
+  padding-bottom: env(safe-area-inset-bottom, 0.75rem);
+}
+
 .line-clamp-2 {
   display: -webkit-box;
   -webkit-line-clamp: 2;
@@ -19,14 +24,21 @@
   overflow: hidden;
 }
 
-/* Smooth scrolling for chat messages - Dark theme */
+/* Mobile-optimized scrolling */
 .overflow-y-auto {
   scrollbar-width: thin;
   scrollbar-color: #4a5568 #2d3748;
+  -webkit-overflow-scrolling: touch;
 }
 
 .overflow-y-auto::-webkit-scrollbar {
-  width: 6px;
+  width: 4px;
+}
+
+@media (min-width: 640px) {
+  .overflow-y-auto::-webkit-scrollbar {
+    width: 6px;
+  }
 }
 
 .overflow-y-auto::-webkit-scrollbar-track {
@@ -54,4 +66,17 @@
 
 .animate-bounce {
   animation: bounce 1.4s infinite ease-in-out both;
+}
+
+/* Mobile touch improvements */
+@media (max-width: 640px) {
+  /* Prevent zoom on input focus */
+  input[type="text"] {
+    font-size: 16px;
+  }
+  
+  /* Better touch targets */
+  button {
+    min-height: 44px;
+  }
 }
